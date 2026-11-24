@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CipherBomb 數字炸彈・終極密碼 (1-100) 派對遊戲</title>
+  
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- 頂部導覽列 (Navigation) -->
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="brand" onclick="document.querySelector('[data-tab=\'game\']').click()">
+        <div class="brand-icon">💣</div>
+        <div class="brand-text">
+          <h1>CipherBomb 數字炸彈</h1>
+          <span>115-1 商業設計系專題</span>
+        </div>
+      </div>
+
+      <!-- 頁籤導覽列 -->
+      <nav class="nav-tabs">
+        <button class="nav-tab-btn active" data-tab="game">
+          <span>🎮</span> 遊戲對戰
+        </button>
+        <button class="nav-tab-btn" data-tab="punish">
+          <span>🃏</span> 懲罰題庫 (CRUD)
+        </button>
+        <button class="nav-tab-btn" data-tab="stats">
+          <span>🏆</span> 戰績榜 (CRUD)
+        </button>
+        <button class="nav-tab-btn" data-tab="report">
+          <span>📑</span> 專案簡報與歷程
+        </button>
+      </nav>
+
+      <!-- 右側快速操作按鈕 -->
+      <div class="nav-actions">
+        <button class="icon-btn" id="theme-toggle-btn" title="切換外觀風格 (淺色極簡 / 深色冷冽)">☀️</button>
+        <button class="icon-btn" id="sound-toggle-btn" title="切換音效">🔊</button>
+        <button class="icon-btn" id="restart-game-btn" title="重新開始遊戲">🔄</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主內容容器 -->
+  <main class="main-wrapper">
+
+    <!-- ==========================================
+         View 1: 遊戲主對戰區 (Game Section)
+         ========================================== -->
+    <section class="view-section active" id="section-game">
+      <div class="game-container">
+        
+        <!-- 左側遊戲主台 -->
+        <div class="glass-panel game-stage" id="game-stage">
+          
+          <!-- 模式切換標籤 -->
+          <div class="mode-selector">
+            <button class="mode-btn" data-mode="single">👤 單人闖關</button>
+            <button class="mode-btn active" data-mode="party">👥 多人派對 (輪流踩雷)</button>
+            <button class="mode-btn" data-mode="custom">👑 魔王出題</button>
+          </div>
+
+          <!-- 回合與當前玩家看板 -->
+          <div class="turn-banner">
+            <div>
+              <span style="color: var(--text-muted); font-size: 0.8rem;">當前回合行動者：</span>
+              <span class="current-player" id="current-player-name">黃乙凌</span>
+            </div>
+            <div class="round-badge" id="round-badge">第 1 回合</div>
+          </div>
+
+          <!-- 核心終極密碼 1-100 範圍看板與炸彈心跳 -->
+          <div class="range-display-container">
+            <!-- 下限值 -->
+            <div class="range-box min">
+              <span class="range-label">下限 MIN</span>
+              <span class="range-val" id="min-val">1</span>
+            </div>
+
+            <!-- 中央炸彈動畫與緊張指示器 -->
+            <div class="bomb-center">
+              <div class="bomb-avatar" id="bomb-avatar">🎯</div>
+              <div class="bomb-pulse-ring"></div>
+              <span class="range-span-badge" id="range-span">剩餘區間: 99</span>
+            </div>
+
+            <!-- 上限值 -->
+            <div class="range-box max">
+              <span class="range-label">上限 MAX</span>
+              <span class="range-val" id="max-val">100</span>
+            </div>
+          </div>
+
+          <!-- 動態縮小安全區域指示條 -->
+          <div class="visual-bar-wrap">
+            <div class="visual-bar-fill" id="visual-bar-fill" style="left: 0%; width: 100%;"></div>
+          </div>
+
+          <!-- 輸入操作區與撥號虛擬鍵盤 -->
+          <div class="input-control-zone">
+            <div class="display-input-wrap">
+              <input type="text" id="guess-input" class="guess-input" placeholder="請猜數字" maxlength="3" autofocus>
+            </div>
+            <div class="input-feedback" id="input-feedback"></div>
+
+            <!-- 虛擬 0-9 撥號鍵盤 (方便手機與平板觸控) -->
+            <div class="keypad-grid">
+              <button class="key-btn" data-key="1">1</button>
+              <button class="key-btn" data-key="2">2</button>
+              <button class="key-btn" data-key="3">3</button>
+              <button class="key-btn" data-key="4">4</button>
+              <button class="key-btn" data-key="5">5</button>
+              <button class="key-btn" data-key="6">6</button>
+              <button class="key-btn" data-key="7">7</button>
+              <button class="key-btn" data-key="8">8</button>
+              <button class="key-btn" data-key="9">9</button>
+              <button class="key-btn action-btn" data-key="clear">清除</button>
+              <button class="key-btn" data-key="0">0</button>
+              <button class="key-btn action-btn" data-key="backspace">⌫</button>
+              <button class="key-btn submit-btn" data-key="submit">確認輸入 (Enter)</button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 右側即時猜測紀錄 (歷史時間軸) -->
+        <aside class="glass-panel game-sidebar">
+          <div class="sidebar-header">
+            <div class="sidebar-title">
+              <span>⏱️</span>
+              <span>即時猜測歷程</span>
+            </div>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">本局歷程</span>
+          </div>
+          
+          <div class="history-list" id="history-list">
+            <div class="empty-history">
+              尚未有猜測紀錄<br>請在鍵盤輸入數字開始！
+            </div>
+          </div>
+        </aside>
+
+      </div>
+    </section>
+
+    <!-- ==========================================
+         View 2: 懲罰題庫管理 (CRUD Manager Section)
+         ========================================== -->
+    <section class="view-section" id="section-punish">
+      <div class="section-header-row">
+        <div class="section-title-wrap">
+          <h2>🃏 命運懲罰題庫管理系統</h2>
+          <p>具備完整 CRUD 功能：踩雷輸家將自動從此題庫隨機抽取懲罰！</p>
+        </div>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <button class="btn-outline" id="test-draw-btn">🎲 測試抽卡</button>
+          <button class="btn-outline" id="restore-defaults-btn">🔄 還原預設題庫</button>
+          <button class="btn-primary" onclick="openModal('add-punish-modal')">➕ 新增懲罰卡片</button>
+        </div>
+      </div>
+
+      <!-- 分類標籤過濾列 -->
+      <div class="filter-bar">
+        <button class="filter-chip active" data-filter="all">全部卡片</button>
+        <button class="filter-chip" data-filter="funny">🤣 搞笑幽默</button>
+        <button class="filter-chip" data-filter="dare">🔥 體能大冒險</button>
+        <button class="filter-chip" data-filter="truth">💬 真心話拷問</button>
+        <button class="filter-chip" data-filter="treat">☕ 友情請客</button>
+      </div>
+
+      <!-- 卡片網格 (動態渲染) -->
+      <div class="cards-grid" id="punishment-cards-container">
+        <!-- 懲罰卡片由 js/main.js 動態產出 -->
+      </div>
+    </section>
+
+    <!-- ==========================================
+         View 3: 戰績榜 (CRUD Leaderboard Section)
+         ========================================== -->
+    <section class="view-section" id="section-stats">
+      <div class="section-header-row">
+        <div class="section-title-wrap">
+          <h2>🏆 遊戲歷史英雄榜與數據統計</h2>
+          <p>即時保存歷史對戰戰績，支援備註修改與資料清空 (CRUD)</p>
+        </div>
+        <button class="btn-danger" id="clear-records-btn">🗑️ 清空所有戰績</button>
+      </div>
+
+      <!-- 統計數據卡片 -->
+      <div class="stats-row">
+        <div class="glass-panel stat-card">
+          <div class="stat-icon">🎮</div>
+          <div class="stat-info">
+            <div class="stat-num" id="stat-total-games">0</div>
+            <div class="stat-label">總對局數</div>
+          </div>
+        </div>
+        <div class="glass-panel stat-card">
+          <div class="stat-icon">⚡</div>
+          <div class="stat-info">
+            <div class="stat-num" id="stat-avg-guesses">0</div>
+            <div class="stat-label">平均猜測步數</div>
+          </div>
+        </div>
+        <div class="glass-panel stat-card">
+          <div class="stat-icon">💥</div>
+          <div class="stat-info">
+            <div class="stat-num" id="stat-boom-count">0</div>
+            <div class="stat-label">累積引爆次數</div>
+          </div>
+        </div>
+        <div class="glass-panel stat-card">
+          <div class="stat-icon">👑</div>
+          <div class="stat-info">
+            <div class="stat-num" id="stat-top-loser" style="font-size: 1.2rem;">–</div>
+            <div class="stat-label">踩雷王（最常引爆）</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 戰績資料表 -->
+      <div class="glass-panel table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>玩家名稱與時間</th>
+              <th>對戰模式</th>
+              <th>引爆密碼</th>
+              <th>總猜題步數</th>
+              <th>心得與備註</th>
+              <th>操作 (CRUD)</th>
+            </tr>
+          </thead>
+          <tbody id="records-tbody">
+            <!-- 由 js/main.js 動態產出 -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         View 4: 專題簡報大綱與改善紀錄 (Report Section)
+         ========================================== -->
+    <section class="view-section" id="section-report">
+      <div class="section-header-row">
+        <div class="section-title-wrap">
+          <h2>📑 期末專題簡報指南與 3 項具體改善紀錄</h2>
+          <p>115-1 自然科學與人工智慧｜商業設計系｜第 3 組專屬成果文件</p>
+        </div>
+      </div>
+
+      <div class="report-grid">
+        <!-- 基本專案資訊與簡報架構 -->
+        <div class="glass-panel info-card">
+          <h3>📌 基本資訊與小組名冊</h3>
+          <p style="font-size: 0.9rem; margin-bottom: 0.8rem;">
+            <strong>課程名稱</strong>：自然科學與人工智慧<br>
+            <strong>所屬組別</strong>：第 3 組（商業設計系）<br>
+            <strong>小組成員</strong>：黃乙凌（學號：11533213）、韓海音<br>
+            <strong>專題題目</strong>：CipherBomb 數字炸彈・終極密碼派對互動遊戲
+          </p>
+
+          <h3 style="margin-top: 1.2rem;">🎤 上台報告架構 (10~15 頁建議)</h3>
+          <ul class="slide-structure-list">
+            <li><strong>P1~P2</strong>：專案主題、團隊分工、品牌 Logo 與視覺風格設定</li>
+            <li><strong>P3~P4</strong>：選題動機（經典終極密碼如何透過商設美學與 AI 轉型為派對互動產品）</li>
+            <li><strong>P5~P7</strong>：網站 Live Demo 現場實機展示（單人/派對模式、撥號鍵盤、抽卡回饋）</li>
+            <li><strong>P8~P9</strong>：CRUD 資料管理功能展示（懲罰題庫管理、戰績備註編輯）</li>
+            <li><strong>P10~P12</strong>：核心改善紀錄（至少 3 處迭代，詳見右側）</li>
+            <li><strong>P13~P14</strong>：AI Vibe Coding 提示詞技巧、遭遇困難與除錯解法</li>
+            <li><strong>P15</strong>：試用心得、未來擴充與 Q&A</li>
+          </ul>
+        </div>
+
+        <!-- 3 項具體改善紀錄 (專題必備考核點) -->
+        <div class="glass-panel info-card">
+          <h3>🚀 專題 3 項具體改善紀錄 (前後對照)</h3>
+
+          <!-- 改善 1 -->
+          <div class="improvement-box">
+            <span class="improvement-badge">改善紀錄 1：視覺緊張度回饋</span>
+            <div style="font-size: 0.85rem; line-height: 1.5;">
+              <strong>原本問題</strong>：初版純文字數字輸入，在縮小區間時缺乏臨場緊張感。<br>
+              <strong>修改決策</strong>：設計動態安全色條與自適應氛圍燈（綠→黃→紅急促閃爍），並用 Web Audio API 合成即時心跳音效。<br>
+              <strong>驗證證據</strong>：現場測試時全體組員明顯感受到範圍小於 10 時的壓迫感，刺激感大幅提升！
+            </div>
+          </div>
+
+          <!-- 改善 2 -->
+          <div class="improvement-box">
+            <span class="improvement-badge">改善紀錄 2：實作派對多人模式與懲罰 CRUD 題庫</span>
+            <div style="font-size: 0.85rem; line-height: 1.5;">
+              <strong>原本問題</strong>：傳統單人猜數字容易流於反覆算數，缺乏派對多人互動與趣味懲處。<br>
+              <strong>修改決策</strong>：加入多人輪流模式，並建立「命運懲罰題庫 (CRUD)」，輸家即時抽卡執行真心話大冒險。<br>
+              <strong>驗證證據</strong>：新增自訂卡片與編輯功能後，可因應不同聚會場合隨意切換搞笑、真心話或請客玩法！
+            </div>
+          </div>
+
+          <!-- 改善 3 -->
+          <div class="improvement-box">
+            <span class="improvement-badge">改善紀錄 3：行動觸控友善與虛擬撥號鍵盤</span>
+            <div style="font-size: 0.85rem; line-height: 1.5;">
+              <strong>原本問題</strong>：手機瀏覽時每次點擊輸入框皆會彈出系統軟體鍵盤，遮擋畫面且輸入緩慢。<br>
+              <strong>修改決策</strong>：在畫面上設計霓虹撥號按鍵 (0-9、Backspace、Clear)，同時支援電腦 Enter 與實體鍵盤。<br>
+              <strong>驗證證據</strong>：在手機與筆電上測試輸入反應，每輪猜測操作速度縮短 50% 以上，體驗流暢。
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==========================================
+       彈出視窗組 (Modals)
+       ========================================== -->
+
+  <!-- 1. 踩雷引爆結算視窗 (Boom Modal) -->
+  <div class="modal-backdrop" id="boom-modal">
+    <div class="modal-content" style="border-color: var(--accent-red); max-width: 440px;">
+      <div class="boom-hero">
+        <div class="boom-icon">💥</div>
+        <div class="boom-title">BOOM!! 炸彈引爆！</div>
+        <p style="color: var(--text-secondary); font-size: 0.95rem;">
+          玩家 <strong id="boom-player" style="color: #fff; font-size: 1.1rem;">黃乙凌</strong> 踩中了終極密碼
+          <span id="boom-secret" style="color: var(--accent-pink); font-family: var(--font-mono); font-size: 1.3rem; font-weight: 800;">77</span>！
+        </p>
+
+        <!-- 抽取的懲罰卡內容展示 -->
+        <div class="boom-card-reveal" id="boom-punish-reveal">
+          <!-- 動態載入抽卡結果 -->
+        </div>
+
+        <button class="btn-primary" id="boom-play-again-btn" style="width: 100%; padding: 0.85rem; justify-content: center; font-size: 1rem; margin-top: 0.5rem;">
+          🔄 再玩一局！
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. 新增懲罰卡片 Modal (Create) -->
+  <div class="modal-backdrop" id="add-punish-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">➕ 新增派對懲罰卡片</div>
+        <button class="icon-btn" onclick="closeModal()">✕</button>
+      </div>
+      <form id="add-punish-form">
+        <div class="form-group">
+          <label class="form-label" for="punish-title">懲罰名稱 *</label>
+          <input type="text" id="punish-title" class="form-input" placeholder="例如：天使請客令、模仿動物" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="punish-desc">懲罰詳細內容 *</label>
+          <textarea id="punish-desc" class="form-textarea" rows="3" placeholder="請詳細描述輸家需要執行的挑戰內容..." required></textarea>
+        </div>
+        <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div>
+            <label class="form-label" for="punish-category">分類標籤</label>
+            <select id="punish-category" class="form-select">
+              <option value="funny">🤣 搞笑幽默</option>
+              <option value="dare">🔥 體能大冒險</option>
+              <option value="truth">💬 真心話拷問</option>
+              <option value="treat">☕ 友情請客</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label" for="punish-stars">難度指數</label>
+            <select id="punish-stars" class="form-select">
+              <option value="1">⭐ 輕鬆挑戰 (1星)</option>
+              <option value="2">⭐⭐ 基礎考驗 (2星)</option>
+              <option value="3" selected>⭐⭐⭐ 派對標準 (3星)</option>
+              <option value="4">⭐⭐⭐⭐ 極限膽量 (4星)</option>
+              <option value="5">⭐⭐⭐⭐⭐ 究極處罰 (5星)</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-outline" onclick="closeModal()">取消</button>
+          <button type="submit" class="btn-primary">確認建立卡片</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. 編輯懲罰卡片 Modal (Update) -->
+  <div class="modal-backdrop" id="edit-punish-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">✏️ 編輯懲罰卡片</div>
+        <button class="icon-btn" onclick="closeModal()">✕</button>
+      </div>
+      <form id="edit-punish-form">
+        <input type="hidden" id="edit-punish-id">
+        <div class="form-group">
+          <label class="form-label" for="edit-punish-title">懲罰名稱 *</label>
+          <input type="text" id="edit-punish-title" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="edit-punish-desc">懲罰詳細內容 *</label>
+          <textarea id="edit-punish-desc" class="form-textarea" rows="3" required></textarea>
+        </div>
+        <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div>
+            <label class="form-label" for="edit-punish-category">分類標籤</label>
+            <select id="edit-punish-category" class="form-select">
+              <option value="funny">🤣 搞笑幽默</option>
+              <option value="dare">🔥 體能大冒險</option>
+              <option value="truth">💬 真心話拷問</option>
+              <option value="treat">☕ 友情請客</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label" for="edit-punish-stars">難度指數</label>
+            <select id="edit-punish-stars" class="form-select">
+              <option value="1">⭐ 輕鬆挑戰 (1星)</option>
+              <option value="2">⭐⭐ 基礎考驗 (2星)</option>
+              <option value="3">⭐⭐⭐ 派對標準 (3星)</option>
+              <option value="4">⭐⭐⭐⭐ 極限膽量 (4星)</option>
+              <option value="5">⭐⭐⭐⭐⭐ 究極處罰 (5星)</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-outline" onclick="closeModal()">取消</button>
+          <button type="submit" class="btn-primary">儲存修改</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 4. 編輯戰績備註 Modal (Update Record) -->
+  <div class="modal-backdrop" id="edit-record-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">✏️ 編輯戰績備註</div>
+        <button class="icon-btn" onclick="closeModal()">✕</button>
+      </div>
+      <form id="edit-record-form">
+        <input type="hidden" id="edit-record-id">
+        <div class="form-group">
+          <label class="form-label" for="edit-record-player">玩家暱稱</label>
+          <input type="text" id="edit-record-player" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="edit-record-note">心得／備註說明</label>
+          <textarea id="edit-record-note" class="form-textarea" rows="3" placeholder="例如：神仙走位、關鍵踩雷等"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-outline" onclick="closeModal()">取消</button>
+          <button type="submit" class="btn-primary">儲存備註</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 5. 魔王自訂密碼 Modal -->
+  <div class="modal-backdrop" id="custom-secret-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">👑 魔王出題：自訂終極密碼</div>
+        <button class="icon-btn" onclick="closeModal()">✕</button>
+      </div>
+      <form id="custom-secret-form">
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">
+          請魔王在螢幕前悄悄輸入要讓大家猜的秘密數字（2 到 99 之間），輸入後畫面將自動遮蔽！
+        </p>
+        <div class="form-group">
+          <label class="form-label" for="custom-secret-input">秘密數字 (2 ~ 99) *</label>
+          <input type="password" id="custom-secret-input" class="form-input" style="font-family: var(--font-mono); font-size: 1.5rem; text-align: center;" placeholder="••" maxlength="2" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-outline" onclick="closeModal()">取消</button>
+          <button type="submit" class="btn-primary">鎖定密碼開始對戰</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 6. 多人派對名單設定 Modal -->
+  <div class="modal-backdrop" id="party-setup-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">👥 多人派對模式：設定玩家名單</div>
+        <button class="icon-btn" onclick="closeModal()">✕</button>
+      </div>
+      <form id="party-setup-form">
+        <div class="form-group">
+          <label class="form-label" for="party-player-names">玩家名單（用逗號或換行分隔）*</label>
+          <textarea id="party-player-names" class="form-textarea" rows="3" required>黃乙凌, 韓海音</textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-outline" onclick="closeModal()">使用預設</button>
+          <button type="submit" class="btn-primary">儲存並開始輪流猜</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 全螢幕彩帶與粒子爆炸畫布 -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- 核心腳本載入 -->
+  <script src="js/audio.js"></script>
+  <script src="js/crud.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
